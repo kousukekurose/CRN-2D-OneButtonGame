@@ -25,16 +25,16 @@ public class StageScene : MonoBehaviour
     public Transform cameraTransfrom;
     private Transform target; // プレイヤーをドラッグ＆ドロップ
     public Vector3 offset;   // プレイヤーとの距離（例: 0, 5, -10）
-    
+
 
     // プレイヤーが力尽きたことを知らせる「ストリーム」
-    private static readonly AsyncReactiveProperty<GameObject> playerDiedSource = new(null);
+    private readonly AsyncReactiveProperty<GameObject> playerDiedSource = new(null);
 
     // 外部からはこれを通じて「通知」を待機（Subscribe）できる
-    public static IUniTaskAsyncEnumerable<GameObject> OnPlayerDied => playerDiedSource;
+    public IUniTaskAsyncEnumerable<GameObject> OnPlayerDied => playerDiedSource;
 
     // 通知を送る
-    public static void NotifyPlayerDied(GameObject player) => playerDiedSource.Value = player;
+    public void NotifyPlayerDied(GameObject player) => playerDiedSource.Value = player;
 
     // 現在シーンに存在する全エネミーを登録
     private static readonly List<GameObject> activeEnemies = new List<GameObject>();
@@ -64,7 +64,7 @@ public class StageScene : MonoBehaviour
             Debug.Log($"クリック検知！ 現在の状態: isGameStrat = {isGameStrat}");
 
         }
-        if(!isGameStrat)
+        if (!isGameStrat)
         {
             SetAllEnemiesActive(false);
         }
@@ -80,12 +80,12 @@ public class StageScene : MonoBehaviour
     {
         SetAllEnemiesActive(false);
         //指定した位置にプレイヤーを生成
-        GameObject newPlayer = Instantiate(playerPrefab,spawnPoint.position,Quaternion.identity);
+        GameObject newPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
         //カメラを生成したプレイヤーを指定
         target = newPlayer.transform;
         //カウントダウン中はプレイヤーは動けないように設定
-        if(newPlayer.TryGetComponent<PlayerInput>(out var input))input.enabled = false;
-        if(newPlayer.TryGetComponent<Player>(out var player))player.enabled = false;
+        if (newPlayer.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
+        if (newPlayer.TryGetComponent<Player>(out var player)) player.enabled = false;
 
         //カウントダウン
         for (int i = 3; i > 0; i--)
@@ -100,7 +100,7 @@ public class StageScene : MonoBehaviour
         SetAllEnemiesActive(true);
 
         if (input != null) input.enabled = true;
-        if(player != null) player.enabled = true;
+        if (player != null) player.enabled = true;
 
         timer.StratTimer();
     }
@@ -157,11 +157,11 @@ public class StageScene : MonoBehaviour
         if (playerObj != null)
         {
             //setActiveだとカメラ機能も停止してしまうためenabledをfalse
-            if (playerObj.TryGetComponent<PlayerInput>(out var input))input.enabled = false;
-            if(playerObj.TryGetComponent<Player>(out var player))player.enabled = false;
-            
+            if (playerObj.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
+            if (playerObj.TryGetComponent<Player>(out var player)) player.enabled = false;
+
             //物理挙動の停止(滑りながら止まってしまうため)
-            if(playerObj.TryGetComponent<Rigidbody2D>(out var rb))
+            if (playerObj.TryGetComponent<Rigidbody2D>(out var rb))
             {
                 rb.linearVelocity = Vector2.zero;
                 rb.bodyType = RigidbodyType2D.Static;
@@ -180,14 +180,23 @@ public class StageScene : MonoBehaviour
         //スプリクト類を止める
         foreach (var comp in obj.GetComponents<MonoBehaviour>())
         {
-            if(comp != this)comp.enabled = false;
+            if (comp != this) comp.enabled = false;
+        }
+
+        //アニメーションも止める
+        if (obj.TryGetComponent<Animator>(out var animator))
+        {
+            animator.enabled = false;
         }
 
         //物理挙動を止める
         if (obj.TryGetComponent<Rigidbody2D>(out var rb))
         {
-            rb.linearVelocity = Vector2.zero;
-            rb.bodyType = RigidbodyType2D.Static;
+            if (rb.bodyType == RigidbodyType2D.Dynamic)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.bodyType = RigidbodyType2D.Static;
+            }
         }
     }
 
@@ -200,6 +209,12 @@ public class StageScene : MonoBehaviour
         foreach (var comp in obj.GetComponents<MonoBehaviour>())
         {
             if (comp != this) comp.enabled = true;
+        }
+
+        //アニメーション開始
+        if (obj.TryGetComponent<Animator>(out var animator))
+        {
+            animator.enabled = true;
         }
 
         //物理挙動を開始
@@ -224,10 +239,10 @@ public class StageScene : MonoBehaviour
     //カメラのコントロール
     private void LateUpdate()
     {
-        if(target != null && cameraTransfrom != null)
+        if (target != null && cameraTransfrom != null)
         {
             //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープする
-            cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y,target.position.z + offset.z);
+            cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y, target.position.z + offset.z);
         }
         Debug.Log("現在のエネミーの数" + activeEnemies.Count);
     }

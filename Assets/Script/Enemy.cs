@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public enum EnemyType { Normal,Jump }
 
 public class Enemy : MonoBehaviour
@@ -26,6 +27,7 @@ public class Enemy : MonoBehaviour
     private BoxCollider2D box = null;
     //private ObjectCollision oc = null;
     private bool isDead = false;
+    private Animator animator;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -36,12 +38,14 @@ public class Enemy : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         box = GetComponent<BoxCollider2D>();
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(sr.isVisible)
+        if (rb.bodyType != RigidbodyType2D.Dynamic) return;
+        if (sr.isVisible)
         {
             switch (type)
             {
@@ -73,7 +77,8 @@ public class Enemy : MonoBehaviour
             jumpTimer -= Time.deltaTime;
             if (jumpTimer <= 0f)
             {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jump);
+                animator.SetTrigger("Jump");
+                rb.linearVelocity = new Vector2(0f, jump);
                 jumpTimer = jumpInterval;
             }
         }

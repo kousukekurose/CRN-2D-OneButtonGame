@@ -49,7 +49,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             Debug.Log("敵と接触した（トリガー）");
-            StageScene.NotifyPlayerDied(this.gameObject);
+            FindObjectOfType<StageScene>().NotifyPlayerDied(gameObject);
         }
     }
 }
