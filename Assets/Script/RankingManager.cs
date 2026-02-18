@@ -38,7 +38,7 @@ public class RankingManager: MonoBehaviour
     }
 
     //ランキング更新
-    public void CheckRanking(float newTime)
+    public bool CheckRanking(float newTime)
     {
         List<float> times = new List<float>();
         for (int i = 1; i <= RankingCount; i++)
@@ -46,7 +46,8 @@ public class RankingManager: MonoBehaviour
             times.Add(PlayerPrefs.GetFloat("Timer" + i, 999f));
         }
 
-        times.Add(newTime);
+        if (!times.Contains(newTime))
+            times.Add(newTime);
         //順番並び替え
         times.Sort();
 
@@ -56,5 +57,8 @@ public class RankingManager: MonoBehaviour
             PlayerPrefs.SetFloat("Timer" + (i + 1), times[i]);
         }
         PlayerPrefs.Save();
+        // 新記録判定（1位かどうか）
+        bool isNewRecord = times[0] == newTime;
+        return isNewRecord;
     }
 }

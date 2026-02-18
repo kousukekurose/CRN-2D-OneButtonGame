@@ -31,14 +31,13 @@ public class Timer : MonoBehaviour
         currentTime = 0f;
     }
 
-    public void Goal()
+    public float Goal()
     {
         //二重ゴール防止
-        if (!isRunning) return;
+        if (!isRunning) return currentTime;
         isRunning = false;
-
-        PlayerPrefs.Save();
         rankingManager.CheckRanking(currentTime);
+        return currentTime;
     }
 
 

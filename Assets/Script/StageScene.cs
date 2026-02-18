@@ -8,13 +8,17 @@ using TMPro;
 public class StageScene : MonoBehaviour
 {
     public Timer timer;
+    public RankingManager rankingManager;
     public TileMapGimmick mapGimmick;
     public GameObject gameClearUI;
     public GameObject gameOverUI;
     public GameObject gameOverArea;
     public GameObject gameClearArea;
     public GameObject playerPrefab;
+    public GameObject timeTextUI;
     public TextMeshProUGUI countdown;
+    public TextMeshProUGUI resultText;
+
     private bool isGameStrat = false;
     //プレイヤー生成位置
     public Transform spawnPoint;
@@ -116,18 +120,30 @@ public class StageScene : MonoBehaviour
         }
     }
 
+    //クリアとゲームオーバー
     public void EndGame(bool isClear, GameObject playerObj)
     {
         //プレイヤーが存在していなかったら中断
-        if(playerObj == null) return;
+        if (playerObj == null) return;
 
         //Clearかgameover時の判定
-        if(isClear)
+        if (isClear)
         {
             gameOverArea.SetActive(false);
-            timer.Goal();
+            // タイマー停止＆タイム取得
+            float clearTime = timer.Goal();
+            bool isNewRecord = rankingManager.CheckRanking(clearTime);
+            if (isNewRecord)
+            {
+                resultText.text = $"New Record!! {clearTime:F1}s";
+            }
+            else
+            {
+                resultText.text = $"Time: {clearTime:F1}s";
+            }
             gameClearUI.SetActive(true);
             gameOverUI.SetActive(false);
+            timeTextUI.SetActive(false);
         }
         else
         {
