@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum EnemyType { Normal,Jump }
+public enum EnemyType { Normal,Jump,Shot }
 
 public class Enemy : MonoBehaviour
 {
@@ -55,6 +55,8 @@ public class Enemy : MonoBehaviour
                 case EnemyType.Jump:
                     JumpEnemy();
                     break;
+                case EnemyType.Shot:
+                    break;
                 default:
                     break;
             }
@@ -84,7 +86,6 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    //まだ消える処理の仕様はない
     private void OnDestroy()
     {
         // 自分が破棄されたらリストから削除

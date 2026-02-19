@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using TMPro;
+using System;
 
 //プレイ終了時の挙動
 public class StageScene : MonoBehaviour
@@ -39,11 +40,8 @@ public class StageScene : MonoBehaviour
     // 現在シーンに存在する全エネミーを登録
     private static readonly List<GameObject> activeEnemies = new List<GameObject>();
 
-    // エネミーが自分を登録する
-    public static void RegisterEnemy(GameObject enemy) => activeEnemies.Add(enemy);
-
-    // エネミーが消える（倒される）時に自分を外す
-    public static void UnregisterEnemy(GameObject enemy) => activeEnemies.Remove(enemy);
+    // 敵数が変化したときに通知するイベント
+    public static event Action<int> OnEnemyCountChanged;
 
     // シーン開始時にリストをクリア
     private void Awake()
@@ -245,6 +243,27 @@ public class StageScene : MonoBehaviour
             cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y, target.position.z + offset.z);
         }
         Debug.Log("現在のエネミーの数" + activeEnemies.Count);
+    }
+
+    // エネミーが自分を登録する
+    public static void RegisterEnemy(GameObject enemy)
+    {
+        activeEnemies.Add(enemy);
+        OnEnemyCountChanged?.Invoke(activeEnemies.Count);
+    }
+
+    // エネミーが消える（倒される）時に自分を外す
+    public static void UnregisterEnemy(GameObject enemy)
+    {
+        activeEnemies.Remove(enemy);
+        activeEnemies.RemoveAll(e => e == null);
+        OnEnemyCountChanged?.Invoke(activeEnemies.Count);
+    }
+
+    //現在の敵の数を教える
+    public static int GetCurrentEnemyCount()
+    {
+        return activeEnemies.Count;
     }
 
 }
