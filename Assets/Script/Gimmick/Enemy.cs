@@ -26,7 +26,7 @@ public class Enemy : MonoBehaviour
     private Rigidbody2D rb = null;
     private BoxCollider2D box = null;
     //private ObjectCollision oc = null;
-    private bool isDead = false;
+    //private bool isDead = false;
     private Animator animator;
 
 

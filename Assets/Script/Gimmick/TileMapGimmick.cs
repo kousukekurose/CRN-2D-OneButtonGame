@@ -32,6 +32,8 @@ public class TileMapGimmick : MonoBehaviour
         }
     }
 
+
+    //タイルマップを消す
     public void EraseArea()
     {
         Vector3Int originCelll = tilemap.WorldToCell(transform.position);

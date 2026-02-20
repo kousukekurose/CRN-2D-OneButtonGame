@@ -6,13 +6,13 @@ public class EnemySpawner : MonoBehaviour
     private Tilemap tilemap;
     [SerializeField]
     private int maxEnemyCount1 = 2;
-    [SerializeField] 
-    private float respawnCheckInterval = 2f;
+    //[SerializeField] 
+    //private float respawnCheckInterval = 2f;
 
     [SerializeField]
     private GameObject[] enemyObject;
 
-    int currentEnemyCount = 0;
+    //private int currentEnemyCount = 0;
 
     [SerializeField]
     StageScene scene;

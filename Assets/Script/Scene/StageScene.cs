@@ -4,6 +4,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using TMPro;
 using System;
+using Cysharp.Threading.Tasks.Linq;
 
 //プレイ終了時の挙動
 public class StageScene : MonoBehaviour
@@ -20,12 +21,12 @@ public class StageScene : MonoBehaviour
     public TextMeshProUGUI countdown;
     public TextMeshProUGUI resultText;
 
-    private bool isGameStrat = false;
+    private bool isGameStart = false;
     //プレイヤー生成位置
     public Transform spawnPoint;
     public Transform cameraTransfrom;
     private Transform target; // プレイヤーをドラッグ＆ドロップ
-    public Vector3 offset;   // プレイヤーとの距離（例: 0, 5, -10）
+    public Vector3 offset;   // プレイヤーとの距離
 
 
     // プレイヤーが力尽きたことを知らせる「ストリーム」
@@ -52,23 +53,36 @@ public class StageScene : MonoBehaviour
     private void Start()
     {
         // ゲーム開始と同時に「誰かが死ぬのを待つ」タスクを起動
-        WatchDeath().Forget();
+        playerDiedSource
+            .Where(player => player != null)
+            .Subscribe(player =>
+            {
+                Debug.Log("プレイヤーの死を検知");
+                EndGame(false, player);
+            });
     }
+
+    //カメラのコントロール
+    private void LateUpdate()
+    {
+        if (target != null && cameraTransfrom != null)
+        {
+            //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープする
+            cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y, target.position.z + offset.z);
+        }
+        Debug.Log("現在のエネミーの数" + activeEnemies.Count);
+    }
+
 
     private void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame)
-        {
-            Debug.Log($"クリック検知！ 現在の状態: isGameStrat = {isGameStrat}");
-
-        }
-        if (!isGameStrat)
+        if (!isGameStart)
         {
             SetAllEnemiesActive(false);
         }
-        if (!isGameStrat && Mouse.current.leftButton.wasPressedThisFrame)
+        if (!isGameStart && Mouse.current.leftButton.wasPressedThisFrame)
         {
-            isGameStrat = true;
+            isGameStart = true;
             StartCoroutine(StartGameSequence());
         }
     }
@@ -103,20 +117,6 @@ public class StageScene : MonoBehaviour
         timer.StratTimer();
     }
 
-    private async UniTaskVoid WatchDeath()
-    {
-        // playerDiedSource に値（GameObject）がセットされるのをずっと監視する
-        await foreach (var playerObj in OnPlayerDied)
-        {
-            // 初期値（null）の時は無視
-            if (playerObj == null) continue;
-
-            Debug.Log("StageScene: プレイヤーの死を検知");
-
-            // 実際にゲーム終了処理を実行
-            EndGame(false, playerObj);
-        }
-    }
 
     //クリアとゲームオーバー
     public void EndGame(bool isClear, GameObject playerObj)
@@ -232,17 +232,6 @@ public class StageScene : MonoBehaviour
             if (isActive) StartEnemy(enemy);
             else StopObject(enemy);
         }
-    }
-
-    //カメラのコントロール
-    private void LateUpdate()
-    {
-        if (target != null && cameraTransfrom != null)
-        {
-            //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープする
-            cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y, target.position.z + offset.z);
-        }
-        Debug.Log("現在のエネミーの数" + activeEnemies.Count);
     }
 
     // エネミーが自分を登録する
