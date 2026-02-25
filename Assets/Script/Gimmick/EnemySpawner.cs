@@ -11,6 +11,9 @@ public class EnemySpawner : MonoBehaviour
     private bool isSpawning = false;
 
     public Transform[] transforms;
+    //敵の間隔
+    public float enemyPosition1 = -2f;
+    public float enemyPosition2 = 2f;
 
     [SerializeField]
     private GameObject[] enemyObject;
@@ -24,33 +27,56 @@ public class EnemySpawner : MonoBehaviour
             .Subscribe(async count => 
             {
                 if (!StageScene.startcheck || isSpawning || ct.IsCancellationRequested) return;
-                int num = maxEnemyCount - StageScene.EnemyCount.Value;
-                isSpawning = true;
-                for (int i = 0 ; i < num ; i++)
+                try
                 {
-                    if (!StageScene.startcheck || ct.IsCancellationRequested) break;
-                    SpawnEnemy();
-                    bool canceled = await UniTask.Yield(PlayerLoopTiming.Update, ct).SuppressCancellationThrow();
-                    if (canceled || !StageScene.startcheck) return;
+                    int targetTotal = maxEnemyCount * transforms.Length;
+                    int numToSpawn = targetTotal - StageScene.EnemyCount.Value;
+                    isSpawning = true;
+                    for (int i = 0; i < numToSpawn; i++)
+                    {
+                        if (!StageScene.startcheck || ct.IsCancellationRequested) break;
+                        int pointIndex = StageScene.EnemyCount.Value % transforms.Length;
+                        //SpawnEnemy();
+                        SpawnEnemyAt(pointIndex);
+                        bool canceled = await UniTask.Yield(PlayerLoopTiming.Update, ct).SuppressCancellationThrow();
+                        if (canceled || !StageScene.startcheck) return;
+                    }
+                }
+                finally
+                {
                     isSpawning = false;
                 }
             }).AddTo(this);
     }
 
 
-    private void SpawnEnemy()
+    //private void SpawnEnemy()
+    //{
+    //    // 仮に敵を生成
+    //    if (this == null || gameObject == null) return;
+    //    int randomId = Random.Range(0, enemyObject.Length);
+    //    GameObject selectPrefab = enemyObject[randomId];
+    //    //重なり防止
+    //    float randomOffset = Random.Range(-4f, 4f);
+    //    int randomPointIndex = Random.Range(0, transforms.Length);
+    //    if (selectPrefab == null) return;
+    //    Vector3 spawnPos = new Vector3(transforms[randomPointIndex].position.x + randomOffset, transforms[randomPointIndex].position.y);
+    //    Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
+    //}
+    private void SpawnEnemyAt(int index)
     {
-        // 仮に敵を生成
-        if (this == null || gameObject == null) return;
+        if (this == null || enemyObject == null || transforms.Length <= index) return;
+
         int randomId = Random.Range(0, enemyObject.Length);
         GameObject selectPrefab = enemyObject[randomId];
-        //重なり防止
-        float randomOffset = Random.Range(-4f, 4f);
         if (selectPrefab == null) return;
-        for (int i = 0; i < transforms.Length; i++)
-        {
-            Vector3 spawnPos = new Vector3(transforms[i].position.x + randomOffset, transforms[i].position.y, transform.position.z);
-            Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
-        }
+
+        // 指定された index の場所を使用する
+        Transform targetTransform = transforms[index];
+
+        float randomOffset = Random.Range(enemyPosition1, enemyPosition2);
+        Vector3 spawnPos = new Vector3(targetTransform.position.x + randomOffset, targetTransform.position.y, targetTransform.position.z);
+
+        Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
     }
 }
