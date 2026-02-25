@@ -53,8 +53,8 @@ public class StageScene : MonoBehaviour
     private void Awake()
     {
         Time.timeScale = 1f;
-        ////カウントリセット
-        //EnemyCount.Value = 0;
+        EnemyCount.Value = 0;
+        startcheck = false;
 
         activeEnemies.Clear();
         // ゲーム開始と同時に「誰かが死ぬのを待つ」タスクを起動
@@ -64,7 +64,7 @@ public class StageScene : MonoBehaviour
             {
                 Debug.Log("プレイヤーの死を検知");
                 EndGame(false, player);
-            });
+            }).AddTo(disposables);
 
         //エネミーが生成された時の通知を登録
         Enemy.OnSupawned
@@ -140,10 +140,10 @@ public class StageScene : MonoBehaviour
         yield return new WaitForSeconds(1.0f);
         countdown.gameObject.SetActive(false);
 
-        SetAllEnemiesActive(true);
         startcheck = true;
-        EnemyCount.OnNext(EnemyCount.Value);
-        Debug.Log(EnemyCount.Value + "ここで0に再設定");
+        SetAllEnemiesActive(true);
+        EnemyCount.Value = activeEnemies.Count;
+        Debug.Log(EnemyCount.Value + "カウント通知飛ばし");
         if (input != null) input.enabled = true;
         if (player != null) player.enabled = true;
 
@@ -203,7 +203,7 @@ public class StageScene : MonoBehaviour
         // 全エネミーを止める
         SetAllEnemiesActive(false);
         //全エネミーの削除
-        ClearAllEnemies(); 
+        //ClearAllEnemies(); 
     }
 
     // 全エネミーの状態を一括制御する（trueなら動く、falseなら止まる）

@@ -20,15 +20,15 @@ public class EnemySpawner : MonoBehaviour
         StageScene.EnemyCount
             .Subscribe(async count => 
             {
-                Debug.Log("startcheck" + StageScene.startcheck);
-                if (!StageScene.startcheck || isSpawning || ct.IsCancellationRequested) return;
-                if(count < maxEnemyCount)
+                Debug.Log("通知の確認" + StageScene.EnemyCount.Value);
+                if (isSpawning || ct.IsCancellationRequested) return;
+                int num = maxEnemyCount - StageScene.EnemyCount.Value; 
+                for(int i = 0 ; i < num ; i++)
                 {
                     isSpawning = true;
                     SpawnEnemy();
-
                     bool canceled = await UniTask.Yield(ct).SuppressCancellationThrow();
-                    if(canceled) return;
+                    if (canceled) return;
                     isSpawning = false;
                 }
             }).AddTo(this);
@@ -39,6 +39,6 @@ public class EnemySpawner : MonoBehaviour
     {
         // 仮に敵を生成
         if (this == null || gameObject == null) return;
-        GameObject enemy = Instantiate(enemyObject, transform.position, Quaternion.identity);
+        GameObject enemy = Instantiate(enemyObject, transform.position, enemyObject.transform.rotation);
     }
 }
