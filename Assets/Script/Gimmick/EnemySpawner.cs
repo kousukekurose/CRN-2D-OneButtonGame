@@ -10,6 +10,8 @@ public class EnemySpawner : MonoBehaviour
     private int maxEnemyCount = 2;
     private bool isSpawning = false;
 
+    public Transform[] transforms;
+
     [SerializeField]
     private GameObject[] enemyObject;
 
@@ -43,9 +45,12 @@ public class EnemySpawner : MonoBehaviour
         int randomId = Random.Range(0, enemyObject.Length);
         GameObject selectPrefab = enemyObject[randomId];
         //重なり防止
-        float randomOffset = Random.Range(-0.5f, 0.5f);
+        float randomOffset = Random.Range(-4f, 4f);
         if (selectPrefab == null) return;
-        Vector3 spawnPos = new Vector3(transform.position.x + randomOffset, transform.position.y, transform.position.z);
-        Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Vector3 spawnPos = new Vector3(transforms[i].position.x + randomOffset, transforms[i].position.y, transform.position.z);
+            Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
+        }
     }
 }
