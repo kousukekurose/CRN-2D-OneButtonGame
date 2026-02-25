@@ -1,10 +1,12 @@
-﻿using UnityEngine;
-using UnityEngine.InputSystem;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
+using R3;
+using System;
 using System.Collections.Generic;
 using TMPro;
-using System;
-using Cysharp.Threading.Tasks.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using static UnityEngine.EventSystems.EventTrigger;
 
 //プレイ終了時の挙動
 public class StageScene : MonoBehaviour
@@ -20,6 +22,7 @@ public class StageScene : MonoBehaviour
     public GameObject timeTextUI;
     public TextMeshProUGUI countdown;
     public TextMeshProUGUI resultText;
+    public static bool startcheck = false;
 
     private bool isGameStart = false;
     //プレイヤー生成位置
@@ -39,19 +42,21 @@ public class StageScene : MonoBehaviour
     public void NotifyPlayerDied(GameObject player) => playerDiedSource.Value = player;
 
     // 現在シーンに存在する全エネミーを登録
-    private static readonly List<GameObject> activeEnemies = new List<GameObject>();
+    private readonly List<GameObject> activeEnemies = new();
+
+    private readonly CompositeDisposable disposables = new();
 
     // 敵数が変化したときに通知するイベント
-    public static event Action<int> OnEnemyCountChanged;
+    public static readonly ReactiveProperty<int> EnemyCount = new(0);
 
     // シーン開始時にリストをクリア
     private void Awake()
     {
-        activeEnemies.Clear();
-    }
+        Time.timeScale = 1f;
+        ////カウントリセット
+        //EnemyCount.Value = 0;
 
-    private void Start()
-    {
+        activeEnemies.Clear();
         // ゲーム開始と同時に「誰かが死ぬのを待つ」タスクを起動
         playerDiedSource
             .Where(player => player != null)
@@ -60,6 +65,36 @@ public class StageScene : MonoBehaviour
                 Debug.Log("プレイヤーの死を検知");
                 EndGame(false, player);
             });
+
+        //エネミーが生成された時の通知を登録
+        Enemy.OnSupawned
+            .Subscribe(enemy =>
+            {
+                if (!activeEnemies.Contains(enemy))
+                {
+                    activeEnemies.Add(enemy);
+                    Debug.Log("エネミーを追加");
+                    EnemyCount.Value = activeEnemies.Count;
+                    Debug.Log("現在のエネミーの数" + activeEnemies.Count);
+                    if (!startcheck)
+                    {
+                        SetAllEnemiesActive(false);
+                    }
+                }
+            }).AddTo(disposables);
+
+        //エネミーが破棄された時の処理
+        Enemy.OnDestroyed
+            .Subscribe(enemy =>
+            {
+                activeEnemies.Remove(enemy);
+                Debug.Log("エネミーの登録破棄");
+                EnemyCount.Value = activeEnemies.Count;
+            }).AddTo(disposables);
+    }
+
+    private void Start()
+    {
     }
 
     //カメラのコントロール
@@ -76,10 +111,6 @@ public class StageScene : MonoBehaviour
 
     private void Update()
     {
-        if (!isGameStart)
-        {
-            SetAllEnemiesActive(false);
-        }
         if (!isGameStart && Mouse.current.leftButton.wasPressedThisFrame)
         {
             isGameStart = true;
@@ -110,7 +141,9 @@ public class StageScene : MonoBehaviour
         countdown.gameObject.SetActive(false);
 
         SetAllEnemiesActive(true);
-
+        startcheck = true;
+        EnemyCount.OnNext(EnemyCount.Value);
+        Debug.Log(EnemyCount.Value + "ここで0に再設定");
         if (input != null) input.enabled = true;
         if (player != null) player.enabled = true;
 
@@ -123,7 +156,7 @@ public class StageScene : MonoBehaviour
     {
         //プレイヤーが存在していなかったら中断
         if (playerObj == null) return;
-
+        startcheck = false;
         //Clearかgameover時の判定
         if (isClear)
         {
@@ -165,9 +198,24 @@ public class StageScene : MonoBehaviour
                 rb.bodyType = RigidbodyType2D.Static;
             }
         }
+        Time.timeScale = 0f;
 
         // 全エネミーを止める
         SetAllEnemiesActive(false);
+        //全エネミーの削除
+        ClearAllEnemies(); 
+    }
+
+    // 全エネミーの状態を一括制御する（trueなら動く、falseなら止まる）
+    private void SetAllEnemiesActive(bool isActive)
+    {
+        foreach (var enemy in activeEnemies)
+        {
+            if (enemy == null) continue;
+
+            if (isActive) StartEnemy(enemy);
+            else StopObject(enemy);
+        }
     }
 
     //エネミー停止機能
@@ -222,35 +270,22 @@ public class StageScene : MonoBehaviour
         }
     }
 
-    // 全エネミーの状態を一括制御する（trueなら動く、falseなら止まる）
-    private void SetAllEnemiesActive(bool isActive)
+    //タイトル画面でエネミーが出現しないように実体の削除
+    public void ClearAllEnemies()
     {
         foreach (var enemy in activeEnemies)
         {
-            if (enemy == null) continue;
-
-            if (isActive) StartEnemy(enemy);
-            else StopObject(enemy);
+            if (enemy != null) Destroy(enemy); 
         }
     }
 
-    // エネミーが自分を登録する
-    public static void RegisterEnemy(GameObject enemy)
+    private void OnDestroy()
     {
-        activeEnemies.Add(enemy);
-        OnEnemyCountChanged?.Invoke(activeEnemies.Count);
-    }
-
-    // エネミーが消える（倒される）時に自分を外す
-    public static void UnregisterEnemy(GameObject enemy)
-    {
-        activeEnemies.Remove(enemy);
-        activeEnemies.RemoveAll(e => e == null);
-        OnEnemyCountChanged?.Invoke(activeEnemies.Count);
+        disposables.Dispose();
     }
 
     //現在の敵の数を教える
-    public static int GetCurrentEnemyCount()
+    public int GetCurrentEnemyCount()
     {
         return activeEnemies.Count;
     }

@@ -1,3 +1,5 @@
+ï»¿using Cysharp.Threading.Tasks;
+using R3;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -5,42 +7,38 @@ public class EnemySpawner : MonoBehaviour
 {
     private Tilemap tilemap;
     [SerializeField]
-    private int maxEnemyCount1 = 2;
-    //[SerializeField] 
-    //private float respawnCheckInterval = 2f;
+    private int maxEnemyCount = 2;
+    private bool isSpawning = false;
 
     [SerializeField]
-    private GameObject[] enemyObject;
+    private GameObject enemyObject;
 
-    //private int currentEnemyCount = 0;
+    private void Start()
+    {
+        var ct = this.GetCancellationTokenOnDestroy();
 
-    [SerializeField]
-    StageScene scene;
+        StageScene.EnemyCount
+            .Subscribe(async count => 
+            {
+                Debug.Log("startcheck" + StageScene.startcheck);
+                if (!StageScene.startcheck || isSpawning || ct.IsCancellationRequested) return;
+                if(count < maxEnemyCount)
+                {
+                    isSpawning = true;
+                    SpawnEnemy();
+
+                    bool canceled = await UniTask.Yield(ct).SuppressCancellationThrow();
+                    if(canceled) return;
+                    isSpawning = false;
+                }
+            }).AddTo(this);
+    }
 
 
     private void SpawnEnemy()
     {
-        // ‰¼‚É“G‚ð¶¬
-        GameObject enemy = Instantiate(enemyObject[0], transform.position, Quaternion.identity);
-    }
-
-    private void CheckEnemyCount(int currentCount)
-    {
-        int toSpawn = maxEnemyCount1 - currentCount;
-        for (int i = 0; i < toSpawn; i++)
-        {
-            SpawnEnemy();
-        }
-    }
-
-    private void OnEnable()
-    {
-        StageScene.OnEnemyCountChanged += CheckEnemyCount;
-        //CheckEnemyCount(StageScene.GetCurrentEnemyCount());
-    }
-
-    private void OnDisable()
-    {
-        StageScene.OnEnemyCountChanged -= CheckEnemyCount;
+        // ä»®ã«æ•µã‚’ç”Ÿæˆ
+        if (this == null || gameObject == null) return;
+        GameObject enemy = Instantiate(enemyObject, transform.position, Quaternion.identity);
     }
 }

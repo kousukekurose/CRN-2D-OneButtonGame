@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using R3;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,12 +30,23 @@ public class Enemy : MonoBehaviour
     //private bool isDead = false;
     private Animator animator;
 
+    //全エネミー共通通知
+    private static readonly Subject<GameObject> onSupawned = new();
+    private static readonly Subject<GameObject> onDestroyed = new();
+
+    //ステージシーン側が購読
+    public static Observable<GameObject> OnSupawned => onSupawned;
+    public static Observable<GameObject> OnDestroyed => onDestroyed;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // 生成されたらリストに自分を追加
-        StageScene.RegisterEnemy(this.gameObject);
+        //// 生成されたらリストに自分を追加
+        //StageScene.RegisterEnemy(this.gameObject);
+
+        //生成されたらどこかに通知
+        onSupawned.OnNext(this.gameObject);
         sr = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         box = GetComponent<BoxCollider2D>();
@@ -88,7 +100,10 @@ public class Enemy : MonoBehaviour
 
     private void OnDestroy()
     {
-        // 自分が破棄されたらリストから削除
-        StageScene.UnregisterEnemy(this.gameObject);
+        //// 自分が破棄されたらリストから削除
+        //StageScene.UnregisterEnemy(this.gameObject);
+
+        //消えるぞという通知を送る
+        onDestroyed.OnNext(this.gameObject);
     }
 }
