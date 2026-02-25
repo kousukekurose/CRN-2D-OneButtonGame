@@ -11,24 +11,25 @@ public class EnemySpawner : MonoBehaviour
     private bool isSpawning = false;
 
     [SerializeField]
-    private GameObject enemyObject;
+    private GameObject[] enemyObject;
 
     private void Start()
     {
+        isSpawning = false;
         var ct = this.GetCancellationTokenOnDestroy();
 
         StageScene.EnemyCount
             .Subscribe(async count => 
             {
-                Debug.Log("通知の確認" + StageScene.EnemyCount.Value);
-                if (isSpawning || ct.IsCancellationRequested) return;
-                int num = maxEnemyCount - StageScene.EnemyCount.Value; 
-                for(int i = 0 ; i < num ; i++)
+                if (!StageScene.startcheck || isSpawning || ct.IsCancellationRequested) return;
+                int num = maxEnemyCount - StageScene.EnemyCount.Value;
+                isSpawning = true;
+                for (int i = 0 ; i < num ; i++)
                 {
-                    isSpawning = true;
+                    if (!StageScene.startcheck || ct.IsCancellationRequested) break;
                     SpawnEnemy();
-                    bool canceled = await UniTask.Yield(ct).SuppressCancellationThrow();
-                    if (canceled) return;
+                    bool canceled = await UniTask.Yield(PlayerLoopTiming.Update, ct).SuppressCancellationThrow();
+                    if (canceled || !StageScene.startcheck) return;
                     isSpawning = false;
                 }
             }).AddTo(this);
@@ -39,6 +40,12 @@ public class EnemySpawner : MonoBehaviour
     {
         // 仮に敵を生成
         if (this == null || gameObject == null) return;
-        GameObject enemy = Instantiate(enemyObject, transform.position, enemyObject.transform.rotation);
+        int randomId = Random.Range(0, enemyObject.Length);
+        GameObject selectPrefab = enemyObject[randomId];
+        //重なり防止
+        float randomOffset = Random.Range(-0.5f, 0.5f);
+        if (selectPrefab == null) return;
+        Vector3 spawnPos = new Vector3(transform.position.x + randomOffset, transform.position.y, transform.position.z);
+        Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
     }
 }

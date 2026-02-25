@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3914866867926111920}
   - component: {fileID: 8392122327596432613}
   m_Layer: 0
-  m_Name: WalkEnemySpawner
+  m_Name: RandomEnemySpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -45,4 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   maxEnemyCount: 2
-  enemyObject: {fileID: 6364773632338967203, guid: 8b21f45d9418607499a95df11fd4f4b3, type: 3}
+  enemyObject:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}

@@ -20,17 +20,20 @@ public class UIManager : MonoBehaviour
     // ステージシーンに遷移
     public void GoToGameScene()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene("StageScene");
     }
 
     // タイトルシーンに遷移
     public void TitleScene()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene("TitleScene");
     }
 
     public void Restart()
     {
+        Time.timeScale = 1f;
         // 現在アクティブなシーンの名前を自動で取得して読み直す
         string currentSceneName = SceneManager.GetActiveScene().name;
         SceneManager.LoadScene(currentSceneName);

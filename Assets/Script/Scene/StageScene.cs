@@ -52,8 +52,8 @@ public class StageScene : MonoBehaviour
     // シーン開始時にリストをクリア
     private void Awake()
     {
-        Time.timeScale = 1f;
-        EnemyCount.Value = 0;
+        EnemyCount.Value = -1;
+        Debug.Log("確認");
         startcheck = false;
 
         activeEnemies.Clear();
@@ -90,6 +90,7 @@ public class StageScene : MonoBehaviour
                 activeEnemies.Remove(enemy);
                 Debug.Log("エネミーの登録破棄");
                 EnemyCount.Value = activeEnemies.Count;
+                Debug.Log(EnemyCount.Value + "登録破棄後のカウント");
             }).AddTo(disposables);
     }
 
@@ -105,7 +106,6 @@ public class StageScene : MonoBehaviour
             //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープする
             cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y, target.position.z + offset.z);
         }
-        Debug.Log("現在のエネミーの数" + activeEnemies.Count);
     }
 
 
@@ -142,7 +142,8 @@ public class StageScene : MonoBehaviour
 
         startcheck = true;
         SetAllEnemiesActive(true);
-        EnemyCount.Value = activeEnemies.Count;
+        EnemyCount.Value = 0;
+        EnemyCount.OnNext(activeEnemies.Count);
         Debug.Log(EnemyCount.Value + "カウント通知飛ばし");
         if (input != null) input.enabled = true;
         if (player != null) player.enabled = true;
