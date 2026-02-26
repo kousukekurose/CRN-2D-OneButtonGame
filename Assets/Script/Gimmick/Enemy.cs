@@ -100,9 +100,6 @@ public class Enemy : MonoBehaviour
 
     private void OnDestroy()
     {
-        //// 自分が破棄されたらリストから削除
-        //StageScene.UnregisterEnemy(this.gameObject);
-
         //消えるぞという通知を送る
         onDestroyed.OnNext(this.gameObject);
     }
