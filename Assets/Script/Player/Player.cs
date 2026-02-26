@@ -1,12 +1,23 @@
 ﻿using UnityEngine;
+using R3;
+using Cysharp.Threading.Tasks;
 
 public class Player : MonoBehaviour
 {
-    public float speed = 5.0f;
+    public float moveSpeed = 5.0f;
     public Rigidbody2D rb;
     public float jump = 5f;
     private int jumpCount = 0;
     public int jumpMaxCount = 3;
+
+    public static readonly ReactiveProperty<int> HP = new(3);
+    // プレイヤーが力尽きたことを知らせる「ストリーム」
+    private static readonly Subject<GameObject> playerDiedSource = new();
+
+    // 外部からはこれを通じて「通知」を待機（Subscribe）できる
+    public static Observable<GameObject> OnPlayerDied => playerDiedSource;
+
+
 
     private void Start()
     {
@@ -16,7 +27,7 @@ public class Player : MonoBehaviour
     void Update()
     {
         // 右方向（X軸のプラス方向）に移動
-        transform.Translate(Vector2.right * speed * Time.deltaTime);
+        transform.Translate(Vector2.right * moveSpeed * Time.deltaTime);
     }
 
     public void OnJump()
@@ -29,7 +40,18 @@ public class Player : MonoBehaviour
 
     }
 
-    [System.Obsolete]
+    //ダメージと死亡
+    public void Damage()
+    {
+        if (HP.Value <= 0) return;
+
+        HP.Value--;
+        if (HP.Value == 0)
+        {
+            playerDiedSource.OnNext(gameObject);
+        }
+    }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
@@ -50,7 +72,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             Debug.Log("敵と接触した（トリガー）");
-            FindObjectOfType<StageScene>().NotifyPlayerDied(gameObject);
+            Damage();
         }
     }
 }

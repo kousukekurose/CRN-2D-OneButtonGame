@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static UnityEngine.EventSystems.EventTrigger;
 
 //プレイ終了時の挙動
 public class StageScene : MonoBehaviour
@@ -20,26 +19,17 @@ public class StageScene : MonoBehaviour
     public GameObject gameClearArea;
     public GameObject playerPrefab;
     public GameObject timeTextUI;
-    public TextMeshProUGUI countdown;
-    public TextMeshProUGUI resultText;
+    public TextMeshProUGUI countdownUI;
+    public TextMeshProUGUI resultTextUI;
     public static bool startcheck = false;
 
     private bool isGameStart = false;
     //プレイヤー生成位置
-    public Transform spawnPoint;
+    public Transform playerSpawnP;
     public Transform cameraTransfrom;
     private Transform target; // プレイヤーをドラッグ＆ドロップ
     public Vector3 offset;   // プレイヤーとの距離
 
-
-    // プレイヤーが力尽きたことを知らせる「ストリーム」
-    private readonly AsyncReactiveProperty<GameObject> playerDiedSource = new(null);
-
-    // 外部からはこれを通じて「通知」を待機（Subscribe）できる
-    public IUniTaskAsyncEnumerable<GameObject> OnPlayerDied => playerDiedSource;
-
-    // 通知を送る
-    public void NotifyPlayerDied(GameObject player) => playerDiedSource.Value = player;
 
     // 現在シーンに存在する全エネミーを登録
     private readonly List<GameObject> activeEnemies = new();
@@ -52,13 +42,14 @@ public class StageScene : MonoBehaviour
     // シーン開始時にリストをクリア
     private void Awake()
     {
+        //値の変化を与えるため初期は-1
         EnemyCount.Value = -1;
         Debug.Log("確認");
         startcheck = false;
 
         activeEnemies.Clear();
         // ゲーム開始と同時に「誰かが死ぬのを待つ」タスクを起動
-        playerDiedSource
+        Player.OnPlayerDied
             .Where(player => player != null)
             .Subscribe(player =>
             {
@@ -123,7 +114,7 @@ public class StageScene : MonoBehaviour
     {
         SetAllEnemiesActive(false);
         //指定した位置にプレイヤーを生成
-        GameObject newPlayer = Instantiate(playerPrefab, spawnPoint.position, Quaternion.identity);
+        GameObject newPlayer = Instantiate(playerPrefab, playerSpawnP.position, Quaternion.identity);
         //カメラを生成したプレイヤーを指定
         target = newPlayer.transform;
         //カウントダウン中はプレイヤーは動けないように設定
@@ -133,12 +124,12 @@ public class StageScene : MonoBehaviour
         //カウントダウン
         for (int i = 3; i > 0; i--)
         {
-            if (countdown != null) countdown.text = i.ToString();
+            if (countdownUI != null) countdownUI.text = i.ToString();
             yield return new WaitForSeconds(1.0f);
         }
-        if (countdown != null) countdown.text = "GO!";
+        if (countdownUI != null) countdownUI.text = "GO!";
         yield return new WaitForSeconds(1.0f);
-        countdown.gameObject.SetActive(false);
+        countdownUI.gameObject.SetActive(false);
 
         startcheck = true;
         SetAllEnemiesActive(true);
@@ -167,11 +158,11 @@ public class StageScene : MonoBehaviour
             bool isNewRecord = rankingManager.CheckRanking(clearTime);
             if (isNewRecord)
             {
-                resultText.text = $"New Record!! {clearTime:F1}s";
+                resultTextUI.text = $"New Record!! {clearTime:F1}s";
             }
             else
             {
-                resultText.text = $"Time: {clearTime:F1}s";
+                resultTextUI.text = $"Time: {clearTime:F1}s";
             }
             gameClearUI.SetActive(true);
             gameOverUI.SetActive(false);
