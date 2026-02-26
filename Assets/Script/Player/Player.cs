@@ -26,6 +26,10 @@ public class Player : MonoBehaviour
     // 外部からはこれを通じて「通知」を待機（Subscribe）できる
     public static Observable<GameObject> OnPlayerDied => playerDiedSource;
 
+    private void Awake()
+    {
+        HP.Value = 3;
+    }
 
 
     private void Start()
