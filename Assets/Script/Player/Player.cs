@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using R3;
 using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.CompilerServices;
 
 public class Player : MonoBehaviour
 {
@@ -9,6 +10,14 @@ public class Player : MonoBehaviour
     public float jump = 5f;
     private int jumpCount = 0;
     public int jumpMaxCount = 3;
+
+    //無敵関数
+    private bool isInvincible = false;
+    [SerializeField]
+    private float invincibleTime = 1.5f;
+    [SerializeField]
+    private float blinkInterval = 0.1f;
+    private SpriteRenderer spriteRenderer;
 
     public static readonly ReactiveProperty<int> HP = new(3);
     // プレイヤーが力尽きたことを知らせる「ストリーム」
@@ -22,6 +31,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     void Update()
@@ -50,6 +60,44 @@ public class Player : MonoBehaviour
         {
             playerDiedSource.OnNext(gameObject);
         }
+        else
+        {
+            StartInvincible().Forget();
+        }
+    }
+
+    //無敵時間
+    private async UniTaskVoid StartInvincible()
+    {
+        isInvincible = true;
+
+        //エネミーとの接触
+        Physics2D.IgnoreLayerCollision
+        (
+            LayerMask.NameToLayer("Player"),
+            LayerMask.NameToLayer("Enemy"),
+            true
+        );
+
+        float timer = 0f;
+
+        while (timer < invincibleTime) 
+        { 
+            spriteRenderer.enabled = !spriteRenderer.enabled;
+            await UniTask.Delay((int)(blinkInterval * 1000));
+            timer += blinkInterval;
+        }
+
+        spriteRenderer.enabled = true;
+
+        Physics2D.IgnoreLayerCollision
+        (
+            LayerMask.NameToLayer("Player"),
+            LayerMask.NameToLayer("Enemy"),
+            false
+        );
+
+        isInvincible = false;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -61,7 +109,7 @@ public class Player : MonoBehaviour
                 //壁にぶつかってもリセットされないように
                 if (contact.normal.y > 0.5f)
                 {
-                    //地面に接触したらカウントを0にリセット
+                    //地面に接触したら0にリセット
                     jumpCount = 0;
                     return;
                 }
