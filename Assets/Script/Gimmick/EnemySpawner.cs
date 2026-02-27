@@ -12,8 +12,8 @@ public class EnemySpawner : MonoBehaviour
 
     public Transform[] transforms;
     //敵の間隔
-    public float enemyPosition1 = -2f;
-    public float enemyPosition2 = 2f;
+    public float spawnRangeMin = -2f;
+    public float spawnRangeMax = 2f;
 
     [SerializeField]
     private GameObject[] enemyObject;
@@ -59,7 +59,7 @@ public class EnemySpawner : MonoBehaviour
         // 指定された index の場所を使用する
         Transform targetTransform = transforms[index];
 
-        float randomOffset = Random.Range(enemyPosition1, enemyPosition2);
+        float randomOffset = Random.Range(spawnRangeMin, spawnRangeMax);
         Vector3 spawnPos = new Vector3(targetTransform.position.x + randomOffset, targetTransform.position.y, targetTransform.position.z);
 
         Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);

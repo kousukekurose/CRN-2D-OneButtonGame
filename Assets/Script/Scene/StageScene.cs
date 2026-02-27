@@ -17,18 +17,18 @@ public class StageScene : MonoBehaviour
     public GameObject gameOverArea;
     public GameObject gameClearArea;
     public GameObject playerPrefab;
-    public GameObject timeTextUI;
-    public TextMeshProUGUI countdownUI;
-    public TextMeshProUGUI resultTextUI;
-    public GameObject playerHPUI;
+    public TextMeshProUGUI timeText;
+    public TextMeshProUGUI countdownText;
+    public TextMeshProUGUI resultText;
+    public GameObject playerHpUI;
     public static bool startcheck = false;
 
     private bool isGameStart = false;
     //プレイヤー生成位置
     public Transform playerSpawnP;
     public Transform cameraTransfrom;
-    private Transform targetPlayer; 
-    public Vector3 offsetCamera;   
+    private Transform currentPlayer; 
+    public Vector3 cameraOffset;   
 
 
     // 現在存在する全エネミーを管理
@@ -94,10 +94,10 @@ public class StageScene : MonoBehaviour
     //カメラのコントロール
     private void LateUpdate()
     {
-        if (targetPlayer != null && cameraTransfrom != null)
+        if (currentPlayer != null && cameraTransfrom != null)
         {
             //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープ
-            cameraTransfrom.position = new Vector3(targetPlayer.position.x + offsetCamera.x, transform.position.y, targetPlayer.position.z + offsetCamera.z);
+            cameraTransfrom.position = new Vector3(currentPlayer.position.x + cameraOffset.x, transform.position.y, currentPlayer.position.z + cameraOffset.z);
         }
     }
 
@@ -118,8 +118,8 @@ public class StageScene : MonoBehaviour
         //指定した位置にプレイヤーを生成
         GameObject newPlayer = Instantiate(playerPrefab, playerSpawnP.position, Quaternion.identity);
         //カメラを生成したプレイヤーを指定
-        targetPlayer = newPlayer.transform;
-        playerHPUI.SetActive(true);
+        currentPlayer = newPlayer.transform;
+        playerHpUI.SetActive(true);
         //カウントダウン中はプレイヤーは動けないように設定
         if (newPlayer.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
         if (newPlayer.TryGetComponent<Player>(out var player)) player.enabled = false;
@@ -127,12 +127,12 @@ public class StageScene : MonoBehaviour
         //カウントダウン
         for (int i = 3; i > 0; i--)
         {
-            if (countdownUI != null) countdownUI.text = i.ToString();
+            if (countdownText != null) countdownText.text = i.ToString();
             yield return new WaitForSeconds(1.0f);
         }
-        if (countdownUI != null) countdownUI.text = "GO!";
+        if (countdownText != null) countdownText.text = "GO!";
         yield return new WaitForSeconds(1.0f);
-        countdownUI.gameObject.SetActive(false);
+        countdownText.gameObject.SetActive(false);
 
         startcheck = true;
         SetAllEnemiesActive(true);
@@ -149,7 +149,7 @@ public class StageScene : MonoBehaviour
     public void EndGame(bool isClear)
     {
         startcheck = false;
-        playerHPUI.SetActive(false);
+        playerHpUI.SetActive(false);
         //Clearかgameover時の判定
         if (isClear)
         {
@@ -159,15 +159,15 @@ public class StageScene : MonoBehaviour
             bool isNewRecord = rankingManager.CheckRanking(clearTime);
             if (isNewRecord)
             {
-                resultTextUI.text = $"New Record!! {clearTime:F1}s";
+                resultText.text = $"New Record!! {clearTime:F1}s";
             }
             else
             {
-                resultTextUI.text = $"Time: {clearTime:F1}s";
+                resultText.text = $"Time: {clearTime:F1}s";
             }
             gameClearUI.SetActive(true);
             gameOverUI.SetActive(false);
-            timeTextUI.SetActive(false);
+            timeText.gameObject.SetActive(false);
         }
         else
         {
@@ -178,14 +178,14 @@ public class StageScene : MonoBehaviour
         }
 
         //プレイヤーの停止(ボタンをクリックするとプレイヤーも動くため)
-        if (targetPlayer != null)
+        if (currentPlayer != null)
         {
             //setActiveだとカメラ機能も停止してしまうためenabledをfalse
-            if (targetPlayer.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
-            if (targetPlayer.TryGetComponent<Player>(out var player)) player.enabled = false;
+            if (currentPlayer.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
+            if (currentPlayer.TryGetComponent<Player>(out var player)) player.enabled = false;
 
             //物理挙動の停止(滑りながら止まってしまうため)
-            if (targetPlayer.TryGetComponent<Rigidbody2D>(out var rb))
+            if (currentPlayer.TryGetComponent<Rigidbody2D>(out var rb))
             {
                 rb.linearVelocity = Vector2.zero;
                 rb.bodyType = RigidbodyType2D.Static;
