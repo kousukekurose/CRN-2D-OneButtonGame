@@ -9010,13 +9010,13 @@ MonoBehaviour:
   gameOverArea: {fileID: 692732703}
   gameClearArea: {fileID: 440535312}
   playerPrefab: {fileID: 4324273675699264732, guid: 6b0d2dd4989db7948810101f54b4b7db, type: 3}
-  timeTextUI: {fileID: 165615403}
-  countdownUI: {fileID: 447914380}
-  resultTextUI: {fileID: 943680417}
-  playerHPUI: {fileID: 340747704}
+  timeText: {fileID: 165615406}
+  countdownText: {fileID: 447914380}
+  resultText: {fileID: 943680417}
+  playerHpUI: {fileID: 340747704}
   playerSpawnP: {fileID: 1300512641}
   cameraTransfrom: {fileID: 519420032}
-  offsetCamera: {x: 4, y: 0, z: -10}
+  cameraOffset: {x: 4, y: 0, z: -10}
 --- !u!1 &1640432526
 GameObject:
   m_ObjectHideFlags: 0
