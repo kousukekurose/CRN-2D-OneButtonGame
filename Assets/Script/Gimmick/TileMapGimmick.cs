@@ -50,7 +50,6 @@ public class TileMapGimmick : MonoBehaviour
                 tilemap.SetTile(tragetPos, null);
             }
         }
-        //一度発動したらトリガーを消す
         Destroy(gameObject);
     }
 

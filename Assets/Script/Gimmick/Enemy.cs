@@ -26,8 +26,6 @@ public class Enemy : MonoBehaviour
     private SpriteRenderer sr = null;
     private Rigidbody2D rb = null;
     private BoxCollider2D box = null;
-    //private ObjectCollision oc = null;
-    //private bool isDead = false;
     private Animator animator;
 
     //全エネミー共通通知
@@ -42,9 +40,6 @@ public class Enemy : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //// 生成されたらリストに自分を追加
-        //StageScene.RegisterEnemy(this.gameObject);
-
         //生成されたらどこかに通知
         onSupawned.OnNext(this.gameObject);
         sr = GetComponent<SpriteRenderer>();

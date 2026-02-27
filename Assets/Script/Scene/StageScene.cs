@@ -1,7 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using R3;
-using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -21,23 +20,26 @@ public class StageScene : MonoBehaviour
     public GameObject timeTextUI;
     public TextMeshProUGUI countdownUI;
     public TextMeshProUGUI resultTextUI;
+    public GameObject playerHPUI;
     public static bool startcheck = false;
 
     private bool isGameStart = false;
     //プレイヤー生成位置
     public Transform playerSpawnP;
     public Transform cameraTransfrom;
-    private Transform target; // プレイヤーをドラッグ＆ドロップ
-    public Vector3 offset;   // プレイヤーとの距離
+    private Transform targetPlayer; 
+    public Vector3 offsetCamera;   
 
 
-    // 現在シーンに存在する全エネミーを登録
+    // 現在存在する全エネミーを管理
     private readonly List<GameObject> activeEnemies = new();
 
     private readonly CompositeDisposable disposables = new();
 
     // 敵数が変化したときに通知するイベント
     public static readonly ReactiveProperty<int> EnemyCount = new(0);
+
+    public static readonly Subject<bool> IsClear = new();
 
     // シーン開始時にリストをクリア
     private void Awake()
@@ -54,7 +56,7 @@ public class StageScene : MonoBehaviour
             .Subscribe(player =>
             {
                 Debug.Log("プレイヤーの死を検知");
-                EndGame(false, player);
+                EndGame(false);
             }).AddTo(disposables);
 
         //エネミーが生成された時の通知を登録
@@ -92,10 +94,10 @@ public class StageScene : MonoBehaviour
     //カメラのコントロール
     private void LateUpdate()
     {
-        if (target != null && cameraTransfrom != null)
+        if (targetPlayer != null && cameraTransfrom != null)
         {
             //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープする
-            cameraTransfrom.position = new Vector3(target.position.x + offset.x, transform.position.y, target.position.z + offset.z);
+            cameraTransfrom.position = new Vector3(targetPlayer.position.x + offsetCamera.x, transform.position.y, targetPlayer.position.z + offsetCamera.z);
         }
     }
 
@@ -116,7 +118,8 @@ public class StageScene : MonoBehaviour
         //指定した位置にプレイヤーを生成
         GameObject newPlayer = Instantiate(playerPrefab, playerSpawnP.position, Quaternion.identity);
         //カメラを生成したプレイヤーを指定
-        target = newPlayer.transform;
+        targetPlayer = newPlayer.transform;
+        playerHPUI.SetActive(true);
         //カウントダウン中はプレイヤーは動けないように設定
         if (newPlayer.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
         if (newPlayer.TryGetComponent<Player>(out var player)) player.enabled = false;
@@ -134,7 +137,7 @@ public class StageScene : MonoBehaviour
         startcheck = true;
         SetAllEnemiesActive(true);
         EnemyCount.Value = 0;
-        EnemyCount.OnNext(activeEnemies.Count);
+        //EnemyCount.OnNext(activeEnemies.Count);
         Debug.Log(EnemyCount.Value + "カウント通知飛ばし");
         if (input != null) input.enabled = true;
         if (player != null) player.enabled = true;
@@ -144,11 +147,10 @@ public class StageScene : MonoBehaviour
 
 
     //クリアとゲームオーバー
-    public void EndGame(bool isClear, GameObject playerObj)
+    public void EndGame(bool isClear)
     {
-        //プレイヤーが存在していなかったら中断
-        if (playerObj == null) return;
         startcheck = false;
+        playerHPUI.SetActive(false);
         //Clearかgameover時の判定
         if (isClear)
         {
@@ -177,25 +179,24 @@ public class StageScene : MonoBehaviour
         }
 
         //プレイヤーの停止(ボタンをクリックするとプレイヤーも動くため)
-        if (playerObj != null)
+        if (targetPlayer != null)
         {
             //setActiveだとカメラ機能も停止してしまうためenabledをfalse
-            if (playerObj.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
-            if (playerObj.TryGetComponent<Player>(out var player)) player.enabled = false;
+            if (targetPlayer.TryGetComponent<PlayerInput>(out var input)) input.enabled = false;
+            if (targetPlayer.TryGetComponent<Player>(out var player)) player.enabled = false;
 
             //物理挙動の停止(滑りながら止まってしまうため)
-            if (playerObj.TryGetComponent<Rigidbody2D>(out var rb))
+            if (targetPlayer.TryGetComponent<Rigidbody2D>(out var rb))
             {
                 rb.linearVelocity = Vector2.zero;
                 rb.bodyType = RigidbodyType2D.Static;
             }
         }
+
         Time.timeScale = 0f;
 
         // 全エネミーを止める
         SetAllEnemiesActive(false);
-        //全エネミーの削除
-        //ClearAllEnemies(); 
     }
 
     // 全エネミーの状態を一括制御する（trueなら動く、falseなら止まる）
@@ -259,15 +260,6 @@ public class StageScene : MonoBehaviour
         if (obj.TryGetComponent<Rigidbody2D>(out var rb))
         {
             rb.bodyType = RigidbodyType2D.Dynamic;
-        }
-    }
-
-    //タイトル画面でエネミーが出現しないように実体の削除
-    public void ClearAllEnemies()
-    {
-        foreach (var enemy in activeEnemies)
-        {
-            if (enemy != null) Destroy(enemy); 
         }
     }
 

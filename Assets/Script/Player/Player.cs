@@ -19,16 +19,17 @@ public class Player : MonoBehaviour
     private float blinkInterval = 0.1f;
     private SpriteRenderer spriteRenderer;
 
-    public static readonly ReactiveProperty<int> HP = new(3);
+    private static readonly ReactiveProperty<int> hp = new(3);
+    public static ReadOnlyReactiveProperty<int> HP => hp;
     // プレイヤーが力尽きたことを知らせる「ストリーム」
-    private static readonly Subject<GameObject> playerDiedSource = new();
+    private static readonly Subject<Unit> playerDiedSource = new();
 
     // 外部からはこれを通じて「通知」を待機（Subscribe）できる
-    public static Observable<GameObject> OnPlayerDied => playerDiedSource;
+    public static Observable<Unit> OnPlayerDied => playerDiedSource;
 
     private void Awake()
     {
-        HP.Value = 3;
+        hp.Value = 3;
     }
 
 
@@ -57,12 +58,12 @@ public class Player : MonoBehaviour
     //ダメージと死亡
     public void Damage()
     {
-        if (HP.Value <= 0) return;
+        if (hp.Value <= 0) return;
 
-        HP.Value--;
-        if (HP.Value == 0)
+        hp.Value--;
+        if (hp.Value == 0)
         {
-            playerDiedSource.OnNext(gameObject);
+            playerDiedSource.OnNext(Unit.Default);
         }
         else
         {

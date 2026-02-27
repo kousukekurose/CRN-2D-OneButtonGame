@@ -12,7 +12,7 @@ public class GameEndTrigger : MonoBehaviour
         // ぶつかった相手のレイヤーが場外かどうか判定
         if (collision.gameObject.layer == LayerMask.NameToLayer("Player"))
         {
-            stageScene.EndGame(isClearTrigger, collision.gameObject);
+            stageScene.EndGame(isClearTrigger);
         }
 
         if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))

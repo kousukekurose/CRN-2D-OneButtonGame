@@ -49,20 +49,6 @@ public class EnemySpawner : MonoBehaviour
             }).AddTo(this);
     }
 
-
-    //private void SpawnEnemy()
-    //{
-    //    // 仮に敵を生成
-    //    if (this == null || gameObject == null) return;
-    //    int randomId = Random.Range(0, enemyObject.Length);
-    //    GameObject selectPrefab = enemyObject[randomId];
-    //    //重なり防止
-    //    float randomOffset = Random.Range(-4f, 4f);
-    //    int randomPointIndex = Random.Range(0, transforms.Length);
-    //    if (selectPrefab == null) return;
-    //    Vector3 spawnPos = new Vector3(transforms[randomPointIndex].position.x + randomOffset, transforms[randomPointIndex].position.y);
-    //    Instantiate(selectPrefab, spawnPos, selectPrefab.transform.rotation);
-    //}
     private void SpawnEnemyAt(int index)
     {
         if (this == null || enemyObject == null || transforms.Length <= index) return;

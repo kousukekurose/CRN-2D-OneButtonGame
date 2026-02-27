@@ -888,7 +888,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &340747705
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8884,9 +8884,10 @@ MonoBehaviour:
   timeTextUI: {fileID: 1285702766}
   countdownUI: {fileID: 447914380}
   resultTextUI: {fileID: 943680417}
+  playerHPUI: {fileID: 340747704}
   playerSpawnP: {fileID: 1300512641}
   cameraTransfrom: {fileID: 519420032}
-  offset: {x: 4, y: 0, z: -10}
+  offsetCamera: {x: 4, y: 0, z: -10}
 --- !u!1 &1640432526
 GameObject:
   m_ObjectHideFlags: 0
