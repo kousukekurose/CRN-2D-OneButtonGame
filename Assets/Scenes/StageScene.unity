@@ -2349,6 +2349,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 375967350}
     m_Modifications:
+    - target: {fileID: 1925374447026592221, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1596483973}
+    - target: {fileID: 1925374447026592221, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: scoreTextOff
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925374447026592221, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: UIManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 1925374447026592221, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 5730306269925715085, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
       propertyPath: m_Name
       value: Score
@@ -8844,7 +8860,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1596483973}
-        m_TargetAssemblyTypeName: Button, Assembly-CSharp
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
         m_MethodName: scoreTextOn
         m_Mode: 1
         m_Arguments:
@@ -8969,7 +8985,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0f1afe60ec54c743b221a039abcc0a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Title
-  score: {fileID: 0}
+  score: {fileID: 1953671050}
   pauseButton:
   - {fileID: 323063855}
   - {fileID: 663804244}
@@ -9330,6 +9346,11 @@ PrefabInstance:
       addedObject: {fileID: 1124514334}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c4935bb41953c1940bc9104987fc5dfa, type: 3}
+--- !u!1 &1953671050 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5730306269925715085, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
+  m_PrefabInstance: {fileID: 975524553}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1953671051 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5875543716209332654, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
@@ -9340,7 +9361,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8751682966465522096, guid: e3d9b9b317cf9b740990832c970cf0a2, type: 3}
   m_PrefabInstance: {fileID: 975524553}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1953671050}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 368cbcb678df46c45a0235ddf2d20906, type: 3}
