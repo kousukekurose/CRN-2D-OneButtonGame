@@ -96,7 +96,7 @@ public class StageScene : MonoBehaviour
     {
         if (targetPlayer != null && cameraTransfrom != null)
         {
-            //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープする
+            //XとZはプレイヤーに追従し、Yはカメラ自身の現在の高さをキープ
             cameraTransfrom.position = new Vector3(targetPlayer.position.x + offsetCamera.x, transform.position.y, targetPlayer.position.z + offsetCamera.z);
         }
     }
@@ -137,7 +137,6 @@ public class StageScene : MonoBehaviour
         startcheck = true;
         SetAllEnemiesActive(true);
         EnemyCount.Value = 0;
-        //EnemyCount.OnNext(activeEnemies.Count);
         Debug.Log(EnemyCount.Value + "カウント通知飛ばし");
         if (input != null) input.enabled = true;
         if (player != null) player.enabled = true;

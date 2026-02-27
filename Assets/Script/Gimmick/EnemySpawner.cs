@@ -36,7 +36,6 @@ public class EnemySpawner : MonoBehaviour
                     {
                         if (!StageScene.startcheck || ct.IsCancellationRequested) break;
                         int pointIndex = StageScene.EnemyCount.Value % transforms.Length;
-                        //SpawnEnemy();
                         SpawnEnemyAt(pointIndex);
                         bool canceled = await UniTask.Yield(PlayerLoopTiming.Update, ct).SuppressCancellationThrow();
                         if (canceled || !StageScene.startcheck) return;

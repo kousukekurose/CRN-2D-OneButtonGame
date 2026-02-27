@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Tilemaps;
-using System.Collections;
 
 public enum GimmickType { Erase, Create, Blink }
 
@@ -40,7 +39,6 @@ public class TileMapGimmick : MonoBehaviour
     //タイルマップを消す
     public void EraseArea()
     {
-        //originCell = tilemap.WorldToCell(transform.position);
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -53,9 +51,9 @@ public class TileMapGimmick : MonoBehaviour
         Destroy(gameObject);
     }
 
+    //エリアを出現
     public void CreateArea()
     {
-        //originCell = tilemap.WorldToCell(transform.position);
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)

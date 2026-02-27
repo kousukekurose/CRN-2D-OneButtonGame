@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using R3;
 using Cysharp.Threading.Tasks;
-using Cysharp.Threading.Tasks.CompilerServices;
 
 public class Player : MonoBehaviour
 {
@@ -124,7 +123,7 @@ public class Player : MonoBehaviour
         // 引数が「Collision2D」から「Collider2D」に変わる点に注意
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
-            Debug.Log("敵と接触した（トリガー）");
+            Debug.Log("敵と接触した");
             Damage();
         }
     }
